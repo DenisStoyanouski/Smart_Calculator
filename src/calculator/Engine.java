@@ -8,22 +8,25 @@ public class Engine {
 
     public static void processInput() {
         while (true) {
+            System.out.print("> ");
             String[] arguments = input().split("\\s");
-            switch (arguments.length) {
-                case 0 : break;
-                case 1 :
-                    if ("/exit".equals(arguments[0])) {
-                        exit();
-                    } else {
-                        System.out.println(arguments[0]);
-                    }
-                    break;
-                case 2 :
-                    try {
-                        System.out.println(sum(Integer.parseInt(arguments[0]), Integer.parseInt(arguments[1])));
-                    } catch (NumberFormatException e) {
-                        System.out.println("You need input two digits");
-                    }
+            try {
+                switch (arguments.length) {
+                    case 0 : break;
+                    case 1 :
+                        if ("/exit".equals(arguments[0])) {
+                            exit();
+                        } else if (arguments[0].isEmpty()) {
+                            break;
+                        } else {
+                            System.out.println(Integer.parseInt(arguments[0]));
+                        }
+                        break;
+                    case 2 : System.out.println(sum(Integer.parseInt(arguments[0]), Integer.parseInt(arguments[1])));
+                        break;
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("You need input digits");
             }
         }
 
