@@ -13,7 +13,7 @@ public class Engine {
                 case 0 : break;
                 case 1 :
                     if ("/exit".equals(arguments[0])) {
-                        System.exit(0);
+                        exit();
                     } else {
                         System.out.println(arguments[0]);
                     }
@@ -30,6 +30,11 @@ public class Engine {
     }
     private static String input() {
         return scanner.nextLine();
+    }
+
+    private static void exit() {
+        System.out.println("Bye!");
+        System.exit(0);
     }
 
     private static int sum(int a, int b) {
