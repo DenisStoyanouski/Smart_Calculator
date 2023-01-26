@@ -9,29 +9,34 @@ public class Engine {
 
     private final static Scanner scanner = new Scanner(System.in);
 
+    private static String line;
+
     public static void processInput() {
+
         while (true) {
-            //System.out.print("> ");
-            String[] arguments = input().split("\\s+");
-            try {
-                switch (arguments.length) {
-                    case 0 : break;
-                    case 1 :
-                        if ("/exit".equals(arguments[0])) {
-                            exit();
-                        } else if ("/help".equals(arguments[0])){
-                            System.out.println("The program calculates the sum and subtraction of numbers");
-                        } else if (arguments[0].isEmpty()) {
+            line = input();
+            if (line.isEmpty() || isExpressionOrCommand(line)) {
+                String[] arguments = line.split("\\s+");
+                try {
+                    switch (arguments.length) {
+                        case 0 : break;
+                        case 1 :
+                            if ("/exit".equals(arguments[0])) {
+                                exit();
+                            } else if ("/help".equals(arguments[0])){
+                                System.out.println("The program calculates the sum and subtraction of numbers");
+                            } else if (arguments[0].isEmpty()) {
+                                break;
+                            } else {
+                                System.out.println(Integer.parseInt(arguments[0]));
+                            }
                             break;
-                        } else {
-                            System.out.println(Integer.parseInt(arguments[0]));
-                        }
-                        break;
-                    default: System.out.println(calculate(arguments));
-                        break;
+                        default: System.out.println(calculate(arguments));
+                            break;
+                    }
+                } catch (NumberFormatException e) {
+                    System.out.println("You need input digits");
                 }
-            } catch (NumberFormatException e) {
-                System.out.println("You need input digits");
             }
         }
 
@@ -43,6 +48,22 @@ public class Engine {
     private static void exit() {
         System.out.println("Bye!");
         System.exit(0);
+    }
+
+    private static boolean isExpressionOrCommand(String line) {
+        boolean isValid = true;
+        Pattern expression = Pattern.compile(".?\\d+(\\s+?[+-]+\\s+?\\d+)*");
+        Pattern command = Pattern.compile("(/exit)|(/help)");
+        Matcher matcherCom = command.matcher(line);
+        Matcher matcherEx = expression.matcher(line);
+        if (line.matches("/.+") && !matcherCom.matches()) {
+            System.out.println("Unknown command");
+            isValid = false;
+        } else if (!line.matches("/.+") && !matcherEx.matches()) {
+            System.out.println("Invalid expression");
+            isValid = false;
+        }
+        return isValid;
     }
 
     private static int calculate(String[] expression) {
