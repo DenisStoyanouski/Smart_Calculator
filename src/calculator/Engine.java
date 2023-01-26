@@ -1,6 +1,9 @@
 package calculator;
 
+import java.util.Arrays;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Engine {
 
@@ -43,21 +46,21 @@ public class Engine {
     }
 
     private static int calculate(String[] expression) {
-
+        //System.out.print(Arrays.toString(expression));
         int currentResult = Integer.parseInt(expression[0]);
         String currentOperator = "+";
         for (int i = 1; i < expression.length; i++) {
             String currentSymbol = expression[i];
-            if (currentSymbol.matches("\\d")) {
-                String[] operations = currentOperator.split("");
-                for(String operation : operations) {
-                    switch(operation) {
-                        case "+" -> currentResult = add(currentResult, Integer.parseInt(currentSymbol));
-                        case "-" -> currentResult = subtract(currentResult, Integer.parseInt(currentSymbol));
-                    }
+            if (currentSymbol.matches("\\d+")) {
+                switch(currentOperator) {
+                    case "+" -> currentResult = add(currentResult, Integer.parseInt(currentSymbol));
+                    case "-" -> currentResult = subtract(currentResult, Integer.parseInt(currentSymbol));
                 }
             } else {
-                currentOperator = currentSymbol.replaceAll("--", "+");
+                /*Pattern patternPlus = Pattern.compile("([+]+)|((-{2})+)");
+                Matcher matcher = patternPlus.matcher(currentSymbol);*/
+                currentOperator = currentSymbol.replaceAll("(\\++)|((-{2})+)", "+");
+                currentOperator = currentOperator.replaceAll("(\\+-)|(-\\+)", "-");
             }
         }
         return currentResult;
