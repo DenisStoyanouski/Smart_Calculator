@@ -1,7 +1,5 @@
 package calculator;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Scanner;
 
 public class Engine {
@@ -26,7 +24,7 @@ public class Engine {
                             System.out.println(Integer.parseInt(arguments[0]));
                         }
                         break;
-                    case 2 : System.out.println(sum(arguments));
+                    default: System.out.println(calculate(arguments));
                         break;
                 }
             } catch (NumberFormatException e) {
@@ -44,7 +42,30 @@ public class Engine {
         System.exit(0);
     }
 
-    private static int sum(String[] digits) {
-        return Arrays.stream(digits).mapToInt(Integer::valueOf).sum();
+    private static int calculate(String[] expression) {
+
+        int currentResult = Integer.parseInt(expression[0]);
+        String currentOperator = "+";
+        for (int i = 1; i < expression.length; i++) {
+            String currentSymbol = expression[i];
+            if (currentSymbol.matches("\\d")) {
+                switch (currentOperator) {
+                    case "+" -> currentResult = addition(currentResult, Integer.parseInt(currentSymbol));
+                    case "-" -> currentResult = subtraction(currentResult, Integer.parseInt(currentSymbol));
+                    default -> System.out.println("Unknown operation");
+                }
+            } else if (currentSymbol.matches("[+-/*]")) {
+                currentOperator = currentSymbol;
+            }
+        }
+        return currentResult;
+    }
+
+    private static int addition(int a, int b) {
+        return a + b;
+    }
+
+    private static int subtraction(int a, int b) {
+        return a - b;
     }
 }
