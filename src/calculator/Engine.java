@@ -8,7 +8,7 @@ public class Engine {
 
     public static void processInput() {
         while (true) {
-            System.out.print("> ");
+            //System.out.print("> ");
             String[] arguments = input().split("\\s");
             try {
                 switch (arguments.length) {
@@ -16,6 +16,8 @@ public class Engine {
                     case 1 :
                         if ("/exit".equals(arguments[0])) {
                             exit();
+                        } else if ("/help".equals(arguments[0])){
+                            System.out.println("The program calculates the sum of numbers");
                         } else if (arguments[0].isEmpty()) {
                             break;
                         } else {
