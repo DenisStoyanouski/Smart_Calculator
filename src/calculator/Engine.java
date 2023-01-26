@@ -1,5 +1,7 @@
 package calculator;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Scanner;
 
 public class Engine {
@@ -24,7 +26,7 @@ public class Engine {
                             System.out.println(Integer.parseInt(arguments[0]));
                         }
                         break;
-                    case 2 : System.out.println(sum(Integer.parseInt(arguments[0]), Integer.parseInt(arguments[1])));
+                    case 2 : System.out.println(sum(arguments));
                         break;
                 }
             } catch (NumberFormatException e) {
@@ -42,7 +44,7 @@ public class Engine {
         System.exit(0);
     }
 
-    private static int sum(int a, int b) {
-        return a + b;
+    private static int sum(String[] digits) {
+        return Arrays.stream(digits).mapToInt(Integer::valueOf).sum();
     }
 }
