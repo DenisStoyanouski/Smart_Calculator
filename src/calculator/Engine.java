@@ -56,7 +56,7 @@ public class Engine {
         int value;
 
         Pattern identifier = Pattern.compile("[a-zA-Z]*\\s*?");
-        Pattern assignment = Pattern.compile("\\s*?\\d+\\s*?");
+        Pattern assignment = Pattern.compile("(\\s*?\\d+\\s*?)|([a-zA-Z]*\\s*?)");
         Pattern expression = Pattern.compile(identifier + "=" + assignment);
 
         Matcher matcherVar = identifier.matcher(line);
