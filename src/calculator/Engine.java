@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class Engine {
 
@@ -17,7 +18,7 @@ public class Engine {
     private static String line;
 
     private static Pattern number = Pattern.compile("(-|\\+)?\\d*");
-    private static Pattern expression = Pattern.compile("(-|\\+)?\\d+(\\s+?[+-]+\\s+?\\d+)*");
+    private static Pattern expression = Pattern.compile("(-|\\+)?(\\d|[a-zA-Z])+(\\s+?[+-]+\\s+?(\\d+|[a-zA-Z]))*");
     private static Pattern command = Pattern.compile("/[a-zA-Z]+");
 
 
@@ -38,7 +39,7 @@ public class Engine {
                 System.out.println(number);
             } else if (matcherCom.matches()) {
                 getCommand(line);
-            } else if (line.matches("[a-zA-Z].*")) {
+            } else if (line.matches("[a-zA-Z][^+-]*")) {
                 getVariable(line);
             } else {
                 if (matcherEx.matches()) {
@@ -53,10 +54,10 @@ public class Engine {
 
     private static void getVariable(String line) {
         String var;
-        int value;
+        String value;
 
-        Pattern identifier = Pattern.compile("[a-zA-Z]*\\s*?");
-        Pattern assignment = Pattern.compile("(\\s*?\\d+\\s*?)|([a-zA-Z]*\\s*?)");
+        Pattern identifier = Pattern.compile("[a-zA-Z]+\\s*?");
+        Pattern assignment = Pattern.compile("(\\s*?(\\d+|[a-zA-Z]+)\\s*?)");
         Pattern expression = Pattern.compile(identifier + "=" + assignment);
 
         Matcher matcherVar = identifier.matcher(line);
@@ -81,8 +82,16 @@ public class Engine {
                 System.out.println("Invalid assignment");
             } else if (mExpression.matches()) {
                 var = line.replaceAll("=" + assignment, "").strip();
-                value = Integer.parseInt(line.replaceAll(identifier + "=", "").strip());
-                variables.put(var, value);
+                value = line.replaceAll(identifier + "=", "").strip();
+                if (value.matches("\\d+")) {
+                    variables.put(var, Integer.parseInt(value));
+                } else {
+                    if (variables.containsKey(value)) {
+                        variables.put(var, variables.get(value));
+                    } else {
+                        System.out.println("Unknown variable");
+                    }
+                }
             }
         }
     }
@@ -107,8 +116,7 @@ public class Engine {
     }
 
     private static int calculate(String line) {
-        String[] expression = line.split("\\s+");
-        //System.out.print(Arrays.toString(expression));
+        String[] expression = convert(line);
         int currentResult = Integer.parseInt(expression[0]);
         String currentOperator = "+";
         for (int i = 1; i < expression.length; i++) {
@@ -122,13 +130,21 @@ public class Engine {
                     default : break;
                 }
             } else {
-                /*Pattern patternPlus = Pattern.compile("([+]+)|((-{2})+)");
-                Matcher matcher = patternPlus.matcher(currentSymbol);*/
                 currentOperator = currentSymbol.replaceAll("(\\++)|((-{2})+)", "+");
                 currentOperator = currentOperator.replaceAll("(\\+-)|(-\\+)", "-");
             }
         }
         return currentResult;
+    }
+
+    private static String[] convert(String line) {
+        String[] expression = line.split("\\s+");
+        for (int i = 0; i < expression.length; i++) {
+            if (expression[i].matches("[a-zA-Z]+")) {
+                expression[i] = String.valueOf(variables.get(expression[i]));
+            }
+        }
+        return expression;
     }
 
     private static int add(int a, int b) {
