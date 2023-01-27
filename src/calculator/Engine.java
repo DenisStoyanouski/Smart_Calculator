@@ -1,5 +1,7 @@
 package calculator;
 
+import jdk.jshell.Snippet;
+
 import java.sql.SQLOutput;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -57,27 +59,31 @@ public class Engine {
         Pattern assignment = Pattern.compile("\\s*?\\d+\\s*?");
         Pattern expression = Pattern.compile(identifier + "=" + assignment);
 
-        Matcher mExpression = expression.matcher(line);
         Matcher matcherVar = identifier.matcher(line);
-        Matcher mIdentifier = identifier.matcher(line).region(0, line.indexOf("="));
-        Matcher mAssignment = assignment.matcher(line).region(line.indexOf("=") + 1, line.length());
-
-        if (matcherVar.matches()) {
-            var = line.strip();
-            if (variables.containsKey(var)) {
-                System.out.println(variables.get(var));
+        Matcher mExpression = expression.matcher(line);
+        if (line.matches("[^=]+")) {
+            if (matcherVar.matches()) {
+                var = line.strip();
+                if (variables.containsKey(var)) {
+                    System.out.println(variables.get(var));
+                } else {
+                    System.out.println("Unknown variable");
+                }
             } else {
-                System.out.println("Unknown variable");
+                System.out.println("Invalid identifier");
             }
-        } else if (!mIdentifier.matches()) {
-            System.out.println("Invalid identifier");
-        } else if (!mAssignment.find()){
-            System.out.println("Invalid assignment");
-        } else if (mExpression.matches()) {
-            var = line.replaceAll("=" + assignment, "").strip();
-            value = Integer.parseInt(line.replaceAll(identifier + "=", "").strip());
-            variables.put(var, value);
-            System.out.println(variables.get(var));
+        } else {
+            Matcher mIdentifier = identifier.matcher(line).region(0, line.indexOf("="));
+            Matcher mAssignment = assignment.matcher(line).region(line.indexOf("=") + 1, line.length());
+            if (!mIdentifier.matches()) {
+                System.out.println("Invalid identifier");
+            } else if (!mAssignment.matches()){
+                System.out.println("Invalid assignment");
+            } else if (mExpression.matches()) {
+                var = line.replaceAll("=" + assignment, "").strip();
+                value = Integer.parseInt(line.replaceAll(identifier + "=", "").strip());
+                variables.put(var, value);
+            }
         }
     }
 
