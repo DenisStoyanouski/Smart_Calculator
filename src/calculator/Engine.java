@@ -1,33 +1,23 @@
 package calculator;
 
-import jdk.jshell.Snippet;
-
-import java.sql.SQLOutput;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 public class Engine {
 
     private final static Scanner scanner = new Scanner(System.in);
-
-    private static String line;
-
-    private static Pattern number = Pattern.compile("(-|\\+)?\\d*");
-    private static Pattern expression = Pattern.compile("(-|\\+)?(\\d|[a-zA-Z])+(\\s+?[+-]+\\s+?(\\d+|[a-zA-Z]))*");
-    private static Pattern command = Pattern.compile("/[a-zA-Z]+");
-
-
-    private static Map<String, Integer> variables = new HashMap<>();
+    final private static Pattern number = Pattern.compile("[-+]?\\d*");
+    final private static Pattern expression = Pattern.compile("[-+]?(\\d|[a-zA-Z])+(\\s+?[+-]+\\s+?(\\d+|[a-zA-Z]))*");
+    final private static Pattern command = Pattern.compile("/[a-zA-Z]+");
+    final private static Map<String, Integer> variables = new HashMap<>();
 
     public static void processInput() {
 
         while (true) {
-            line = input();
+            String line = input();
             Matcher matcherCom = command.matcher(line);
             Matcher matcherEx = expression.matcher(line);
             Matcher matcherNumber = number.matcher(line);
