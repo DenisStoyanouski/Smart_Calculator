@@ -1,10 +1,12 @@
 package calculator;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class Engine {
 
@@ -144,4 +146,8 @@ public class Engine {
     private static int subtract(int a, int b) {
         return a - b;
     }
+
+    private static int multiply(int a, int b) {return a * b;}
+
+    private static int divide(int a, int b) {return a / b;}
 }
