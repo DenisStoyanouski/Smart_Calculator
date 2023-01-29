@@ -1,18 +1,16 @@
 package calculator;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Engine {
 
     private final static Scanner scanner = new Scanner(System.in);
     final private static Pattern number = Pattern.compile("[-+]?\\d*");
-    final private static Pattern expression = Pattern.compile("[-+]?(\\d|[a-zA-Z])+(\\s+?[+-]+\\s+?(\\d+|[a-zA-Z]))*");
+    final private static Pattern expression = Pattern.compile("[-+]?(\\d|[a-zA-Z])+(\\s+?[-+*/^]+\\s+?(\\d+|[a-zA-Z]))*");
     final private static Pattern command = Pattern.compile("/[a-zA-Z]+");
     final private static Map<String, Integer> variables = new HashMap<>();
 
@@ -142,6 +140,44 @@ public class Engine {
             }
         }
         return expression;
+    }
+
+    private static String infixToPrefix(String infix) {
+        StringBuilder prefix = new StringBuilder();
+        Deque<String> operation = new ArrayDeque<>();
+        Map<String, Integer> priority = new HashMap<>();
+        priority.put("^", 3);
+        priority.put("*", 2);
+        priority.put("/", 2);
+        priority.put("+", 1);
+        priority.put("-", 1);
+        priority.put("(", 0);
+
+        for (int i = 0; i < infix.length(); i++) {
+            String symbol = String.valueOf(infix.charAt(i));
+
+            if ("(".equals(symbol)) {
+                operation.push(symbol);
+            } else if (")".equals(symbol)) {
+                while (!"(".equals(operation.peek())) {
+                    prefix.append(operation.poll());
+                }
+                operation.poll();
+            } else if (symbol.matches("\\d")) {
+                prefix.append(symbol);
+            } else if (operation.isEmpty() || priority.get(symbol) >= priority.get(operation.peek())) {
+                operation.push(symbol);
+            } else if (priority.get(symbol) < priority.get(operation.peek())) {
+                while (!operation.isEmpty() && priority.get(symbol) <= priority.get(operation.peek())) {
+                    prefix.append(operation.poll());
+                }
+                operation.push(symbol);
+            }
+        }
+        while (!operation.isEmpty()) {
+            prefix.append(operation.poll());
+        }
+        return prefix.toString();
     }
 
     private static int add(int a, int b) {
