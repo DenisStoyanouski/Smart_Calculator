@@ -123,6 +123,7 @@ public class Engine {
                     break;
                     case "/" : currentResult = divide(currentResult, Integer.parseInt(currentSymbol));
                     break;
+                    case "^" : currentResult = power(currentResult, Integer.parseInt(currentSymbol));
                     default : break;
                 }
             } else {
@@ -154,4 +155,7 @@ public class Engine {
     private static int multiply(int a, int b) {return a * b;}
 
     private static int divide(int a, int b) {return a / b;}
+
+    private static int power(int a, int b) {return (int) Math.pow(a, b);}
+
 }
