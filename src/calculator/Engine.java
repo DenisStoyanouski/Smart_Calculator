@@ -3,21 +3,21 @@ package calculator;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class Engine {
 
     private final static Scanner scanner = new Scanner(System.in);
     final private static Pattern number = Pattern.compile("[-+]?\\d*");
-    final private static Pattern expression = Pattern.compile("[-+]?(\\d|[a-zA-Z])+(\\s+?[-+*/^]+\\s+?(\\d+|[a-zA-Z]))*");
+    final private static Pattern expression = Pattern.compile("[-+(]?(\\d|[a-zA-Z])+(\\s*?[-+*/^]+\\s*?[(]*?(\\d+|[a-zA-Z])[)]*?)*");
     final private static Pattern command = Pattern.compile("/[a-zA-Z]+");
     final private static Map<String, Integer> variables = new HashMap<>();
 
     public static void processInput() {
 
         while (true) {
-            String line = input();
+            String line = input().replaceAll("(\\++)|((-{2})+)", "+")
+                    .replaceAll("(\\+-)|(-\\+)", "-");
+            System.out.println(line);
             Matcher matcherCom = command.matcher(line);
             Matcher matcherEx = expression.matcher(line);
             Matcher matcherNumber = number.matcher(line);
@@ -106,31 +106,33 @@ public class Engine {
     }
 
     private static int calculate(String line) {
-        String[] expression = convert(line);
-        int currentResult = Integer.parseInt(expression[0]);
-        String currentOperator = "+";
-        for (int i = 1; i < expression.length; i++) {
-            String currentSymbol = expression[i];
-            if (currentSymbol.matches("\\d+")) {
-                switch(currentOperator) {
-                    case "+" : currentResult = add(currentResult, Integer.parseInt(currentSymbol));
-                    break;
-                    case "-" : currentResult = subtract(currentResult, Integer.parseInt(currentSymbol));
-                    break;
-                    case "*" : currentResult = multiply(currentResult, Integer.parseInt(currentSymbol));
-                    break;
-                    case "/" : currentResult = divide(currentResult, Integer.parseInt(currentSymbol));
-                    break;
-                    case "^" : currentResult = power(currentResult, Integer.parseInt(currentSymbol));
-                    break;
+        Deque<String> expressionPostfix = infixToPostfix(line);
+        Deque<Integer> postfix = new ArrayDeque<>();
+
+        while (!expressionPostfix.isEmpty()) {
+            if (expressionPostfix.peekLast().matches("\\d")) {
+                postfix.push(Integer.parseInt(expressionPostfix.pollLast()));
+            } else {
+                String operator = expressionPostfix.pollLast();
+                int b = postfix.poll();
+                int a = postfix.poll();
+
+                switch(operator) {
+                    case "+" : postfix.push(add(a, b));
+                        break;
+                    case "-" : postfix.push(subtract(a, b));
+                        break;
+                    case "*" : postfix.push(multiply(a, b));
+                        break;
+                    case "/" : postfix.push(divide(a, b));
+                        break;
+                    case "^" : postfix.push(power(a, b));
+                        break;
                     default : break;
                 }
-            } else {
-                currentOperator = currentSymbol.replaceAll("(\\++)|((-{2})+)", "+");
-                currentOperator = currentOperator.replaceAll("(\\+-)|(-\\+)", "-");
             }
         }
-        return currentResult;
+        return postfix.peek();
     }
 
     private static String[] convert(String line) {
@@ -143,9 +145,10 @@ public class Engine {
         return expression;
     }
 
-    private static String infixToPostfix(String infix) {
-        StringBuilder prefix = new StringBuilder();
+    private static Deque infixToPostfix(String infix) {
+        String infixPost = infix.replaceAll("\\s+","");
         Deque<String> operation = new ArrayDeque<>();
+        Deque<String> postfix = new ArrayDeque<>();
         Map<String, Integer> priority = new HashMap<>();
         priority.put("^", 3);
         priority.put("*", 2);
@@ -154,31 +157,31 @@ public class Engine {
         priority.put("-", 1);
         priority.put("(", 0);
 
-        for (int i = 0; i < infix.length(); i++) {
-            String symbol = String.valueOf(infix.charAt(i));
+        for (int i = 0; i < infixPost.length(); i++) {
+            String symbol = String.valueOf(infixPost.charAt(i));
 
             if ("(".equals(symbol)) {
                 operation.push(symbol);
             } else if (")".equals(symbol)) {
                 while (!"(".equals(operation.peek())) {
-                    prefix.append(operation.poll());
+                    postfix.push(operation.poll());
                 }
                 operation.poll();
             } else if (symbol.matches("\\d")) {
-                prefix.append(symbol);
+                postfix.push(symbol);
             } else if (operation.isEmpty() || priority.get(symbol) >= priority.get(operation.peek())) {
                 operation.push(symbol);
             } else if (priority.get(symbol) < priority.get(operation.peek())) {
                 while (!operation.isEmpty() && priority.get(symbol) <= priority.get(operation.peek())) {
-                    prefix.append(operation.poll());
+                    postfix.push(operation.poll());
                 }
                 operation.push(symbol);
             }
         }
         while (!operation.isEmpty()) {
-            prefix.append(operation.poll());
+            postfix.push(operation.poll());
         }
-        return prefix.toString();
+        return postfix;
     }
 
     private static int add(int a, int b) {
