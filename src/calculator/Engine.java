@@ -119,6 +119,10 @@ public class Engine {
                     break;
                     case "-" : currentResult = subtract(currentResult, Integer.parseInt(currentSymbol));
                     break;
+                    case "*" : currentResult = multiply(currentResult, Integer.parseInt(currentSymbol));
+                    break;
+                    case "/" : currentResult = divide(currentResult, Integer.parseInt(currentSymbol));
+                    break;
                     default : break;
                 }
             } else {
