@@ -122,6 +122,7 @@ public class Engine {
                     case "/" : currentResult = divide(currentResult, Integer.parseInt(currentSymbol));
                     break;
                     case "^" : currentResult = power(currentResult, Integer.parseInt(currentSymbol));
+                    break;
                     default : break;
                 }
             } else {
@@ -142,7 +143,7 @@ public class Engine {
         return expression;
     }
 
-    private static String infixToPrefix(String infix) {
+    private static String infixToPostfix(String infix) {
         StringBuilder prefix = new StringBuilder();
         Deque<String> operation = new ArrayDeque<>();
         Map<String, Integer> priority = new HashMap<>();
