@@ -31,7 +31,7 @@ public class Engine {
             } else if (line.matches("[a-zA-Z][^+-]*")) {
                 getVariable(line);
             } else {
-                if (matcherEx.matches()) {
+                if (matcherEx.matches() && areBracketsClosed(line)) {
                     System.out.println(calculate(line));
                 } else {
                     System.out.println("Invalid expression");
@@ -39,6 +39,20 @@ public class Engine {
 
             }
         }
+    }
+
+    private static boolean areBracketsClosed(String line) {
+        Deque<String> expression = new ArrayDeque<>();
+        String[] exp = line.replaceAll("\\s+","").split("(?!\\d)|(?<!\\d)");
+        Arrays.stream(exp).filter(x->")".equals(x) || ("(".equals(x)))
+                .forEach((x) -> {
+                    if ("(".equals(x)) {
+                        expression.push(x);
+                    } else {
+                        expression.pop();
+                    }
+                });
+        return expression.isEmpty();
     }
 
     private static void getVariable(String line) {
