@@ -1,5 +1,6 @@
 package calculator;
 
+import java.math.BigInteger;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -12,7 +13,7 @@ public class Engine {
     final private static Pattern variable = Pattern.compile("[a-zA-Z]+=?[-+]?((\\d+)|([a-zA-Z]*?))");
     final private static Pattern expression = Pattern.compile("[-+(]?(\\d|[a-zA-Z])+([-+*/^]?[(]*?(\\d+|[a-zA-Z])[)]*?)*");
     final private static Pattern command = Pattern.compile("/[a-zA-Z]+");
-    final private static Map<String, Integer> variables = new HashMap<>();
+    final private static Map<String, BigInteger> variables = new HashMap<>();
 
     public static void processInput() {
 
@@ -28,7 +29,7 @@ public class Engine {
             if (line.isEmpty()) {
                 continue;
             } else if (matcherNumber.matches()){
-                int number = Integer.parseInt(line);
+                BigInteger number = new BigInteger(line);
                 System.out.println(number);
             } else if (matcherCom.matches()) {
                 getCommand(line);
@@ -93,7 +94,7 @@ public class Engine {
                 var = line.replaceAll("=" + assignment, "").strip();
                 value = line.replaceAll(identifier + "=", "").strip();
                 if (value.matches(number.pattern())) {
-                    variables.put(var, Integer.parseInt(value));
+                    variables.put(var, new BigInteger(value));
                 } else {
                     if (variables.containsKey(value)) {
                         variables.put(var, variables.get(value));
@@ -124,28 +125,28 @@ public class Engine {
         System.exit(0);
     }
 
-    private static int calculate(String line) {
+    private static BigInteger calculate(String line) {
         String[] conLine = convert(line);
         Deque<String> expressionPostfix = infixToPostfix(conLine);
-        Deque<Integer> postfix = new ArrayDeque<>();
+        Deque<BigInteger> postfix = new ArrayDeque<>();
         while (!expressionPostfix.isEmpty()) {
             if (expressionPostfix.peekLast().matches(number.pattern())) {
-                postfix.push(Integer.parseInt(expressionPostfix.pollLast()));
+                postfix.push(new BigInteger(expressionPostfix.pollLast()));
             } else {
                 String operator = expressionPostfix.pollLast();
-                int b = postfix.poll();
-                int a = postfix.poll();
+                BigInteger b = postfix.poll();
+                BigInteger a = postfix.poll();
 
                 switch(operator) {
-                    case "+" : postfix.push(add(a, b));
+                    case "+" : postfix.push(a.add(b));
                         break;
-                    case "-" : postfix.push(subtract(a, b));
+                    case "-" : postfix.push(a.subtract(b));
                         break;
-                    case "*" : postfix.push(multiply(a, b));
+                    case "*" : postfix.push(a.multiply(b));
                         break;
-                    case "/" : postfix.push(divide(a, b));
+                    case "/" : postfix.push(a.divide(b));
                         break;
-                    case "^" : postfix.push(power(a, b));
+                    case "^" : postfix.push(a.pow(Integer.parseInt(b.toString())));
                         break;
                     default : break;
                 }
@@ -201,19 +202,5 @@ public class Engine {
         }
         return postfix;
     }
-
-    private static int add(int a, int b) {
-        return a + b;
-    }
-
-    private static int subtract(int a, int b) {
-        return a - b;
-    }
-
-    private static int multiply(int a, int b) {return a * b;}
-
-    private static int divide(int a, int b) {return a / b;}
-
-    private static int power(int a, int b) {return (int) Math.pow(a, b);}
 
 }
