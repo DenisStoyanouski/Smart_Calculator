@@ -16,7 +16,8 @@ public class Engine {
 
         while (true) {
             String line = input().replaceAll("(\\++)|((-{2})+)", "+")
-                    .replaceAll("(\\+-)|(-\\+)", "-");
+                    .replaceAll("(\\+-)|(-\\+)", "-")
+                    .replaceAll("\\s+","");
             Matcher matcherCom = command.matcher(line);
             Matcher matcherEx = expression.matcher(line);
             Matcher matcherNumber = number.matcher(line);
@@ -48,8 +49,10 @@ public class Engine {
                 .forEach((x) -> {
                     if ("(".equals(x)) {
                         expression.push(x);
-                    } else {
+                    } else if (")".equals(x) && !expression.isEmpty()) {
                         expression.pop();
+                    } else {
+                        expression.push(x);
                     }
                 });
         return expression.isEmpty();
@@ -119,7 +122,8 @@ public class Engine {
     }
 
     private static int calculate(String line) {
-        Deque<String> expressionPostfix = infixToPostfix(line);
+        String[] conLine = convert(line);
+        Deque<String> expressionPostfix = infixToPostfix(conLine);
         Deque<Integer> postfix = new ArrayDeque<>();
         System.out.println(expressionPostfix);
         while (!expressionPostfix.isEmpty()) {
@@ -149,7 +153,7 @@ public class Engine {
     }
 
     private static String[] convert(String line) {
-        String[] expression = line.split("\\s+");
+        String[] expression = line.split("(?!(\\d+)|([a-zA-Z]+))|((?<!(\\d)|([a-zA-Z])))");
         for (int i = 0; i < expression.length; i++) {
             if (expression[i].matches("[a-zA-Z]+")) {
                 expression[i] = String.valueOf(variables.get(expression[i]));
@@ -158,8 +162,8 @@ public class Engine {
         return expression;
     }
 
-    private static Deque infixToPostfix(String infix) {
-        String[] infixPost = infix.replaceAll("\\s+","").split("(?!\\d)|(?<!\\d)");
+    private static Deque infixToPostfix(String[] infix) {
+
         Deque<String> operation = new ArrayDeque<>();
         Deque<String> postfix = new ArrayDeque<>();
         Map<String, Integer> priority = new HashMap<>();
@@ -170,7 +174,7 @@ public class Engine {
         priority.put("-", 1);
         priority.put("(", 0);
 
-        for (String sym : infixPost) {
+        for (String sym : infix) {
             String symbol = sym.strip();
             if ("(".equals(symbol)) {
                 operation.push(symbol);
