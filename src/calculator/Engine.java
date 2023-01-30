@@ -8,7 +8,7 @@ public class Engine {
 
     private final static Scanner scanner = new Scanner(System.in);
     final private static Pattern number = Pattern.compile("[-+]?\\d*");
-    final private static Pattern expression = Pattern.compile("[-+(]?(\\d|[a-zA-Z])+(\\s*?[-+*/^]+\\s*?[(]*?(\\d+|[a-zA-Z])[)]*?)*");
+    final private static Pattern expression = Pattern.compile("[-+(]?(\\d|[a-zA-Z])+(\\s*?[-+*/^]?\\s*?[(]*?(\\d+|[a-zA-Z])[)]*?)*");
     final private static Pattern command = Pattern.compile("/[a-zA-Z]+");
     final private static Map<String, Integer> variables = new HashMap<>();
 
@@ -17,7 +17,6 @@ public class Engine {
         while (true) {
             String line = input().replaceAll("(\\++)|((-{2})+)", "+")
                     .replaceAll("(\\+-)|(-\\+)", "-");
-            System.out.println(line);
             Matcher matcherCom = command.matcher(line);
             Matcher matcherEx = expression.matcher(line);
             Matcher matcherNumber = number.matcher(line);
@@ -108,9 +107,9 @@ public class Engine {
     private static int calculate(String line) {
         Deque<String> expressionPostfix = infixToPostfix(line);
         Deque<Integer> postfix = new ArrayDeque<>();
-
+        System.out.println(expressionPostfix);
         while (!expressionPostfix.isEmpty()) {
-            if (expressionPostfix.peekLast().matches("\\d")) {
+            if (expressionPostfix.peekLast().matches("\\d+")) {
                 postfix.push(Integer.parseInt(expressionPostfix.pollLast()));
             } else {
                 String operator = expressionPostfix.pollLast();
@@ -146,7 +145,7 @@ public class Engine {
     }
 
     private static Deque infixToPostfix(String infix) {
-        String infixPost = infix.replaceAll("\\s+","");
+        String[] infixPost = infix.replaceAll("\\s+","").split("(?!\\d)|(?<!\\d)");
         Deque<String> operation = new ArrayDeque<>();
         Deque<String> postfix = new ArrayDeque<>();
         Map<String, Integer> priority = new HashMap<>();
@@ -157,9 +156,8 @@ public class Engine {
         priority.put("-", 1);
         priority.put("(", 0);
 
-        for (int i = 0; i < infixPost.length(); i++) {
-            String symbol = String.valueOf(infixPost.charAt(i));
-
+        for (String sym : infixPost) {
+            String symbol = sym.strip();
             if ("(".equals(symbol)) {
                 operation.push(symbol);
             } else if (")".equals(symbol)) {
@@ -167,11 +165,11 @@ public class Engine {
                     postfix.push(operation.poll());
                 }
                 operation.poll();
-            } else if (symbol.matches("\\d")) {
+            } else if (symbol.matches("\\d+")) {
                 postfix.push(symbol);
-            } else if (operation.isEmpty() || priority.get(symbol) >= priority.get(operation.peek())) {
+            } else if (operation.isEmpty() || priority.get(operation.peek()) < priority.get(symbol)) {
                 operation.push(symbol);
-            } else if (priority.get(symbol) < priority.get(operation.peek())) {
+            } else if (priority.get(operation.peek()) >= priority.get(symbol)) {
                 while (!operation.isEmpty() && priority.get(symbol) <= priority.get(operation.peek())) {
                     postfix.push(operation.poll());
                 }
