@@ -107,9 +107,9 @@ public class Engine {
     }
 
     private static void getCommand(String line) {
-        if (line.matches("\\s*/exit\\s*")) {
+        if (line.matches("/exit")) {
             exit();
-        } else if (line.matches("\\s*/help\\s*")) {
+        } else if (line.matches("/help")) {
             System.out.println("The program calculates the sum and subtraction of numbers");
         } else {
             System.out.println("Unknown command");
