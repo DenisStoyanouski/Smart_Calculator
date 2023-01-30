@@ -7,8 +7,10 @@ import java.util.regex.Pattern;
 public class Engine {
 
     private final static Scanner scanner = new Scanner(System.in);
-    final private static Pattern number = Pattern.compile("[-+]?\\d*");
-    final private static Pattern expression = Pattern.compile("[-+(]?(\\d|[a-zA-Z])+(\\s*?[-+*/^]?\\s*?[(]*?(\\d+|[a-zA-Z])[)]*?)*");
+    final private static Pattern number = Pattern.compile("[-+]?\\d+");
+    final private static Pattern varName = Pattern.compile("[a-zA-Z]+");
+    final private static Pattern variable = Pattern.compile("[a-zA-Z]+=?[-+]?((\\d+)|([a-zA-Z]*?))");
+    final private static Pattern expression = Pattern.compile("[-+(]?(\\d|[a-zA-Z])+([-+*/^]?[(]*?(\\d+|[a-zA-Z])[)]*?)*");
     final private static Pattern command = Pattern.compile("/[a-zA-Z]+");
     final private static Map<String, Integer> variables = new HashMap<>();
 
@@ -21,6 +23,7 @@ public class Engine {
             Matcher matcherCom = command.matcher(line);
             Matcher matcherEx = expression.matcher(line);
             Matcher matcherNumber = number.matcher(line);
+            Matcher matcherVariable = variable.matcher(line);
 
             if (line.isEmpty()) {
                 continue;
@@ -29,7 +32,7 @@ public class Engine {
                 System.out.println(number);
             } else if (matcherCom.matches()) {
                 getCommand(line);
-            } else if (line.matches("[a-zA-Z][^+-]*")) {
+            } else if (matcherVariable.matches()) {
                 getVariable(line);
             } else {
                 if (matcherEx.matches() && areBracketsClosed(line)) {
@@ -63,7 +66,7 @@ public class Engine {
         String value;
 
         Pattern identifier = Pattern.compile("[a-zA-Z]+\\s*?");
-        Pattern assignment = Pattern.compile("(\\s*?(\\d+|[a-zA-Z]+)\\s*?)");
+        Pattern assignment = Pattern.compile("(\\s*?([+-]?\\d+|[+-]?[a-zA-Z]+)\\s*?)");
         Pattern expression = Pattern.compile(identifier + "=" + assignment);
 
         Matcher matcherVar = identifier.matcher(line);
@@ -89,7 +92,7 @@ public class Engine {
             } else if (mExpression.matches()) {
                 var = line.replaceAll("=" + assignment, "").strip();
                 value = line.replaceAll(identifier + "=", "").strip();
-                if (value.matches("\\d+")) {
+                if (value.matches(number.pattern())) {
                     variables.put(var, Integer.parseInt(value));
                 } else {
                     if (variables.containsKey(value)) {
@@ -125,9 +128,8 @@ public class Engine {
         String[] conLine = convert(line);
         Deque<String> expressionPostfix = infixToPostfix(conLine);
         Deque<Integer> postfix = new ArrayDeque<>();
-        System.out.println(expressionPostfix);
         while (!expressionPostfix.isEmpty()) {
-            if (expressionPostfix.peekLast().matches("\\d+")) {
+            if (expressionPostfix.peekLast().matches(number.pattern())) {
                 postfix.push(Integer.parseInt(expressionPostfix.pollLast()));
             } else {
                 String operator = expressionPostfix.pollLast();
@@ -155,7 +157,7 @@ public class Engine {
     private static String[] convert(String line) {
         String[] expression = line.split("(?!(\\d+)|([a-zA-Z]+))|((?<!(\\d)|([a-zA-Z])))");
         for (int i = 0; i < expression.length; i++) {
-            if (expression[i].matches("[a-zA-Z]+")) {
+            if (expression[i].matches(varName.pattern())) {
                 expression[i] = String.valueOf(variables.get(expression[i]));
             }
         }
@@ -183,7 +185,7 @@ public class Engine {
                     postfix.push(operation.poll());
                 }
                 operation.poll();
-            } else if (symbol.matches("\\d+")) {
+            } else if (symbol.matches(number.pattern())) {
                 postfix.push(symbol);
             } else if (operation.isEmpty() || priority.get(operation.peek()) < priority.get(symbol)) {
                 operation.push(symbol);
